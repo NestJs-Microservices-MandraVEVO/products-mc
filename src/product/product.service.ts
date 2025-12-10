@@ -92,4 +92,22 @@ export class ProductService extends PrismaClient implements OnModuleInit{
     })
     return product;
   }
+
+  async validateProducts(ids: number[]) {
+    ids = Array.from(new Set(ids)); //esto es para purgar a los duplicados, tener en cuenta ya que puede haber productos con el mismo ID pero diferente campo como size con XL o CH
+    const products = await this.product.findMany({
+      where: {
+        id: { in: ids },
+      }
+    });
+
+    if (products.length !== ids.length) {
+      throw new RpcException({
+        message: `Some products are not valid`,
+        status: HttpStatus.BAD_REQUEST
+      });
+    }
+
+    return products;
+  }
 }
